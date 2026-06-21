@@ -4,7 +4,7 @@
  */
 
 // ─── API Base URL ──────────────────────────────────────────
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'https://smart-health-ai-xfgu.onrender.com';
 
 // ─── API Helper ────────────────────────────────────────────
 async function apiGet(endpoint) {
