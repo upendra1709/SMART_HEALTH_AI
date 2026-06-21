@@ -573,7 +573,7 @@
     // ─── Load symptoms from backend ───────────────────────
     async function loadSymptoms() {
       try {
-        const res = await fetch('http://localhost:5000/symptoms');
+        const res = await fetch('https://smart-health-ai-xfgu.onrender.com/symptoms');
         const data = await res.json();
         allSymptoms = data.symptoms;
         renderSymptoms();
@@ -704,7 +704,7 @@
 
       try {
         const symptoms = [...selectedSymptoms];
-        const res = await fetch('http://localhost:5000/predict', {
+        const res = await fetch('https://smart-health-ai-xfgu.onrender.com/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ symptoms })
