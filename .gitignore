@@ -6,7 +6,7 @@ venv/
 env/
 .env/
 .venv/
-backend/model/*.pkl
+
 .vscode/
 .idea/
 *.code-workspace
