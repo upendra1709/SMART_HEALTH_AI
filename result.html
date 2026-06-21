@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnosis Result — Smart Health AI</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { padding-top: 70px; }
+
+    /* ─── Page Hero ───────────────────────────────────────── */
+    .page-hero {
+      background: var(--dark-2);
+      border-bottom: 1px solid var(--border-2);
+      padding: 36px 6%;
+    }
+
+    .page-hero-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--white-30);
+      margin-bottom: 10px;
+    }
+
+    .page-breadcrumb a { color: var(--blue-bright); }
+    .page-hero h1 { font-size: clamp(1.5rem, 3vw, 2rem); }
+    .page-hero p { color: var(--white-60); font-size: 0.9rem; margin-top: 6px; }
+
+    /* ─── Results Layout ──────────────────────────────────── */
+    .results-wrap {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 40px 6%;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ─── Main Diagnosis Card ─────────────────────────────── */
+    .diagnosis-main {
+      background: var(--card);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease 0.1s forwards;
+    }
+
+    .dm-header {
+      padding: 32px 36px;
+      background: var(--dark-2);
+      border-bottom: 1px solid var(--border-2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dm-header::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 300px; height: 100%;
+      background: radial-gradient(ellipse at right, var(--blue-glow), transparent 70%);
+    }
+
+    .dm-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--blue-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dm-disease {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      line-height: 1.1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .dm-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── Confidence Section ──────────────────────────────── */
+    .dm-confidence {
+      padding: 28px 36px;
+      border-bottom: 1px solid var(--border-2);
+    }
+
+    .conf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .conf-item label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--white-30);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .conf-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .conf-bar { margin-top: 6px; }
+
+    /* ─── Description ─────────────────────────────────────── */
+    .dm-description {
+      padding: 28px 36px;
+      border-bottom: 1px solid var(--border-2);
+    }
+
+    .dm-description h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--white-30);
+      margin-bottom: 14px;
+    }
+
+    .dm-description p {
+      font-size: 0.95rem;
+      color: var(--white-60);
+      line-height: 1.75;
+    }
+
+    /* ─── Precautions ─────────────────────────────────────── */
+    .dm-precautions {
+      padding: 28px 36px;
+    }
+
+    .dm-precautions h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--white-30);
+      margin-bottom: 16px;
+    }
+
+    .precaution-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .precaution-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--dark-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      color: var(--white-60);
+      opacity: 0;
+      transform: translateX(-12px);
+      transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.2s;
+    }
+
+    .precaution-item:hover {
+      border-color: var(--border);
+      color: var(--white);
+    }
+
+    .prec-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: rgba(59,130,246,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    /* Risk-specific accents */
+    .risk-low  .prec-icon { background: var(--green-bg); }
+    .risk-medium .prec-icon { background: var(--yellow-bg); }
+    .risk-high .prec-icon { background: var(--red-bg); }
+
+    /* ─── Sidebar ──────────────────────────────────────────── */
+    .results-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: sticky;
+      top: 90px;
+    }
+
+    /* Risk Indicator */
+    .risk-card {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeInUp 0.6s ease 0.2s forwards;
+    }
+
+    .rc-low    { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05)); border: 1px solid rgba(16,185,129,0.3); }
+    .rc-medium { background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05)); border: 1px solid rgba(245,158,11,0.3); }
+    .rc-high   { background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.3); }
+
+    .risk-card-inner {
+      padding: 24px;
+      text-align: center;
+    }
+
+    .risk-icon {
+      font-size: 2.8rem;
+      margin-bottom: 12px;
+    }
+
+    .risk-label {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .rc-low    .risk-label { color: var(--green); }
+    .rc-medium .risk-label { color: var(--yellow); }
+    .rc-high   .risk-label { color: var(--red); }
+
+    .risk-desc {
+      font-size: 0.82rem;
+      color: var(--white-60);
+      line-height: 1.6;
+    }
+
+    /* Top predictions card */
+    .top-preds-card {
+      background: var(--card);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeInUp 0.6s ease 0.3s forwards;
+    }
+
+    .tp-header {
+      padding: 18px 22px;
+      background: var(--dark-2);
+      border-bottom: 1px solid var(--border-2);
+    }
+
+    .tp-header h3 {
+      font-size: 0.9rem;
+    }
+
+    .tp-header p {
+      font-size: 0.78rem;
+      color: var(--white-60);
+      margin-top: 3px;
+    }
+
+    .tp-list {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tp-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tp-rank {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      background: var(--dark-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--white-60);
+      flex-shrink: 0;
+    }
+
+    .tp-rank.first { background: rgba(59,130,246,0.2); color: var(--blue-bright); }
+
+    .tp-details { flex: 1; min-width: 0; }
+
+    .tp-name {
+      font-size: 0.85rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .tp-bar-wrap { background: var(--dark-3); height: 4px; border-radius: 100px; overflow: hidden; }
+
+    .tp-bar {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+
+    .tp-conf {
+      font-size: 0.78rem;
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--white-60);
+      flex-shrink: 0;
+    }
+
+    /* Symptoms used */
+    .symptoms-used-card {
+      background: var(--card);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeInUp 0.6s ease 0.4s forwards;
+    }
+
+    .symptoms-used-card h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--white-30);
+      margin-bottom: 14px;
+    }
+
+    .su-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .su-chip {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 100px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      color: var(--blue-bright);
+    }
+
+    /* Action buttons */
+    .actions-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease 0.5s forwards;
+    }
+
+    .actions-card .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Disclaimer */
+    .result-disclaimer {
+      background: rgba(245, 158, 11, 0.07);
+      border: 1px solid rgba(245, 158, 11, 0.18);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 0.78rem;
+      color: rgba(245, 158, 11, 0.85);
+      line-height: 1.6;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease 0.6s forwards;
+    }
+
+    /* No result state */
+    .no-result {
+      text-align: center;
+      padding: 80px 24px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .no-result .icon { font-size: 3rem; margin-bottom: 16px; }
+    .no-result h2 { font-size: 1.5rem; margin-bottom: 10px; }
+    .no-result p { color: var(--white-60); margin-bottom: 24px; }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+      .results-wrap { grid-template-columns: 1fr; }
+      .results-sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <div class="logo-icon">🏥</div>
+      Smart Health AI
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="checker.html">Symptom Checker</a></li>
+      <!-- THEME TOGGLE: added -->
+      <li>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light or dark theme">
+          <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+          <span class="theme-toggle-text">Dark</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <div>
+        <div class="page-breadcrumb">
+          <a href="index.html">Home</a>
+          <span>›</span>
+          <a href="checker.html">Checker</a>
+          <span>›</span>
+          <span>Result</span>
+        </div>
+        <h1>Diagnosis Result</h1>
+        <p>AI-generated health insight based on your selected symptoms.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsContainer"></div>
+
+  <!-- PDF REPORT: jsPDF library -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- THEME TOGGLE: shared script -->
+  <script src="js/script.js"></script>
+  <script>
+    function formatLabel(s) {
+      return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function getRiskConfig(risk) {
+      const configs = {
+        low:    { cls: 'rc-low',    icon: '🟢', label: 'Low Risk',    desc: 'This condition typically has mild severity. Follow recommended precautions.', badgeCls: 'badge-green', color: 'var(--green)', barColor: 'linear-gradient(90deg, var(--green), #34d399)' },
+        medium: { cls: 'rc-medium', icon: '🟡', label: 'Medium Risk', desc: 'This condition requires attention. Consult a doctor for proper evaluation.', badgeCls: 'badge-yellow', color: 'var(--yellow)', barColor: 'linear-gradient(90deg, var(--yellow), #fcd34d)' },
+        high:   { cls: 'rc-high',   icon: '🔴', label: 'High Risk',   desc: 'This condition may require urgent medical attention. Please see a doctor.', badgeCls: 'badge-red', color: 'var(--red)', barColor: 'linear-gradient(90deg, var(--red), #f87171)' }
+      };
+      return configs[risk] || configs.medium;
+    }
+
+    function getPrecautionIcon(text, index) {
+      const icons = ['💊', '🏥', '🥗', '💧', '🛌', '🧴', '⚠️', '📋'];
+      if (text.toLowerCase().includes('doctor') || text.toLowerCase().includes('medical') || text.toLowerCase().includes('emergency') || text.toLowerCase().includes('specialist')) return '🏥';
+      if (text.toLowerCase().includes('diet') || text.toLowerCase().includes('food') || text.toLowerCase().includes('eat')) return '🥗';
+      if (text.toLowerCase().includes('water') || text.toLowerCase().includes('hydrat')) return '💧';
+      if (text.toLowerCase().includes('rest') || text.toLowerCase().includes('sleep')) return '🛌';
+      if (text.toLowerCase().includes('medication') || text.toLowerCase().includes('medicine') || text.toLowerCase().includes('antibiotic')) return '💊';
+      return icons[index % icons.length];
+    }
+
+    // PDF REPORT: generate and download symptom report
+    function downloadPdfReport(data, symptoms, rcLabel) {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('PDF library not loaded. Please refresh and try again.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 40;
+      const maxWidth = pageWidth - margin * 2;
+      let y = 48;
+
+      const addPageIfNeeded = (lines = 1) => {
+        const lineHeight = 14;
+        if (y + lines * lineHeight > pageHeight - margin) {
+          doc.addPage();
+          y = 48;
+        }
+      };
+
+      const addTextLines = (lines, indent = 0) => {
+        lines.forEach(line => {
+          addPageIfNeeded(1);
+          doc.text(line, margin + indent, y);
+          y += 14;
+        });
+      };
+
+      const addBulletedItem = (text) => {
+        const wrapped = doc.splitTextToSize(text, maxWidth - 10);
+        if (!wrapped.length) return;
+        addPageIfNeeded(1);
+        doc.text(`• ${wrapped[0]}`, margin, y);
+        y += 14;
+        if (wrapped.length > 1) {
+          addTextLines(wrapped.slice(1), 10);
+        }
+      };
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('Smart Health AI — Symptom Report', margin, y);
+      y += 22;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+      y += 18;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Diagnosis Summary', margin, y);
+      y += 14;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      addPageIfNeeded(3);
+      doc.text(`Disease: ${data.disease || 'N/A'}`, margin, y);
+      y += 14;
+      doc.text(`Risk Level: ${rcLabel}`, margin, y);
+      y += 14;
+      doc.text(`Confidence: ${(data.confidence || 0).toFixed(1)}%`, margin, y);
+      y += 18;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Description', margin, y);
+      y += 14;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const descLines = doc.splitTextToSize(data.description || 'No description available.', maxWidth);
+      addTextLines(descLines);
+      y += 8;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Symptoms Selected', margin, y);
+      y += 14;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const symptomList = (symptoms && symptoms.length)
+        ? symptoms.map(s => formatLabel(s))
+        : ['No symptoms selected.'];
+      symptomList.forEach(item => addBulletedItem(item));
+      y += 6;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Recommended Precautions', margin, y);
+      y += 14;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const precautions = data.precautions && data.precautions.length ? data.precautions : ['No precautions available.'];
+      precautions.forEach(item => addBulletedItem(item));
+
+      doc.save('symptom-report.pdf');
+    }
+
+    function renderResults(data, symptoms) {
+      const risk = data.risk || 'medium';
+      const rc = getRiskConfig(risk);
+      const conf = data.confidence || 0;
+      const topPreds = data.top_predictions || [];
+
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = `
+        <div class="results-wrap">
+
+          <!-- Main Diagnosis -->
+          <div class="diagnosis-main risk-${risk}">
+            <div class="dm-header">
+              <div class="dm-eyebrow">🤖 AI Diagnosis</div>
+              <div class="dm-disease">${data.disease}</div>
+              <div class="dm-badges">
+                <span class="badge ${rc.badgeCls}">● ${rc.label}</span>
+                <span class="badge badge-blue">🎯 ${conf.toFixed(1)}% Confidence</span>
+                <span class="badge" style="background:var(--white-10); border:1px solid var(--border-2); color:var(--white-60); font-size:0.73rem; padding:4px 12px;">
+                  ML Model: RandomForestClassifier
+                </span>
+              </div>
+            </div>
+
+            <!-- Confidence bars -->
+            <div class="dm-confidence">
+              <div class="conf-grid">
+                <div class="conf-item">
+                  <label>Confidence Score</label>
+                  <div class="conf-value" style="color:${rc.color}">${conf.toFixed(1)}%</div>
+                  <div class="conf-bar">
+                    <div class="progress-track">
+                      <div class="progress-fill" id="confBar" style="width:0%; background:${rc.barColor}"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="conf-item">
+                  <label>Risk Level</label>
+                  <div class="conf-value" style="color:${rc.color}; font-size:1.4rem; text-transform:capitalize;">${rc.label}</div>
+                  <div class="conf-bar">
+                    <div class="progress-track">
+                      <div class="progress-fill" id="riskBar" style="width:0%; background:${rc.barColor}"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="dm-description">
+              <h3>About This Condition</h3>
+              <p>${data.description}</p>
+            </div>
+
+            <!-- Precautions -->
+            <div class="dm-precautions">
+              <h3>Recommended Precautions</h3>
+              <div class="precaution-list" id="precList">
+                ${(data.precautions || []).map((p, i) => `
+                  <div class="precaution-item">
+                    <div class="prec-icon">${getPrecautionIcon(p, i)}</div>
+                    <span>${p}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="results-sidebar">
+
+            <!-- Risk Card -->
+            <div class="risk-card ${rc.cls}">
+              <div class="risk-card-inner">
+                <div class="risk-icon">${rc.icon}</div>
+                <div class="risk-label">${rc.label}</div>
+                <div class="risk-desc">${rc.desc}</div>
+              </div>
+            </div>
+
+            <!-- Top Predictions -->
+            ${topPreds.length > 1 ? `
+            <div class="top-preds-card">
+              <div class="tp-header">
+                <h3>Top Predictions</h3>
+                <p>Model's top disease candidates</p>
+              </div>
+              <div class="tp-list">
+                ${topPreds.map((p, i) => `
+                  <div class="tp-item">
+                    <div class="tp-rank ${i === 0 ? 'first' : ''}">${i+1}</div>
+                    <div class="tp-details">
+                      <div class="tp-name">${p.disease}</div>
+                      <div class="tp-bar-wrap">
+                        <div class="tp-bar" style="width:${p.confidence}%"></div>
+                      </div>
+                    </div>
+                    <div class="tp-conf">${p.confidence.toFixed(0)}%</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            <!-- Symptoms Used -->
+            ${symptoms.length > 0 ? `
+            <div class="symptoms-used-card">
+              <h3>Symptoms Analyzed</h3>
+              <div class="su-chips">
+                ${symptoms.map(s => `<span class="su-chip">${formatLabel(s)}</span>`).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            <!-- Actions -->
+            <div class="actions-card">
+              <!-- PDF REPORT: added -->
+              <button class="btn btn-primary" id="downloadReportBtn" type="button">
+                ⬇️ Download Report (PDF)
+              </button>
+              <a href="checker.html" class="btn btn-outline">
+                ← Check Again
+              </a>
+              <a href="index.html" class="btn btn-ghost">
+                🏠 Back to Home
+              </a>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="result-disclaimer">
+              ⚠️ <strong>Medical Disclaimer:</strong> This is an AI prediction for informational purposes only. It does not constitute medical advice. Please consult a qualified healthcare professional for proper diagnosis and treatment.
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      // Animate progress bars after render
+      setTimeout(() => {
+        const confFill = conf;
+        const riskFill = risk === 'low' ? 25 : risk === 'medium' ? 55 : 85;
+        document.getElementById('confBar').style.width = confFill + '%';
+        document.getElementById('riskBar').style.width = riskFill + '%';
+      }, 300);
+
+      // Animate precaution items
+      setTimeout(() => {
+        document.querySelectorAll('.precaution-item').forEach((el, i) => {
+          setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateX(0)';
+          }, i * 100);
+        });
+      }, 400);
+
+      // PDF REPORT: wire up download
+      const downloadBtn = document.getElementById('downloadReportBtn');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+          downloadPdfReport(data, symptoms, rc.label);
+        });
+      }
+    }
+
+    function renderNoResult() {
+      document.getElementById('resultsContainer').innerHTML = `
+        <div class="no-result">
+          <div class="icon">🏥</div>
+          <h2>No Diagnosis Found</h2>
+          <p>It looks like you arrived here without selecting symptoms. Go back and use the symptom checker.</p>
+          <a href="checker.html" class="btn btn-primary">🔍 Check Symptoms</a>
+        </div>
+      `;
+    }
+
+    // ─── Init ──────────────────────────────────────────────
+    const diagnosisData = sessionStorage.getItem('diagnosis');
+    const symptomData   = sessionStorage.getItem('selectedSymptoms');
+
+    if (diagnosisData) {
+      try {
+        const data     = JSON.parse(diagnosisData);
+        const symptoms = symptomData ? JSON.parse(symptomData) : [];
+        renderResults(data, symptoms);
+      } catch(e) {
+        renderNoResult();
+      }
+    } else {
+      renderNoResult();
+    }
+  </script>
+</body>
+</html>
